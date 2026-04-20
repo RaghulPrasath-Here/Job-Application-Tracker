@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(cuid())
+  googleId     String    @unique
+  email        String    @unique
+  name         String?
+  picture      String?
+
+  // OAuth tokens 
+  accessToken  String?
+  refreshToken String?
+  tokenExpiry  DateTime?
+
+  lastSyncAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  applications Application[]
+
+  @@map("users")
+}
+
+model Application {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  company        String
+  jobTitle       String
+  status         String    @default("Applied") // Applied | Interview | Offer | Rejected | Withdrawn | Other
+  confidence     Float     @default(1.0)
+
+  recruiterName  String?
+  recruiterEmail String?
+  nextSteps      String?
+  interviewDate  DateTime?
+  jobUrl         String?   // Can be manually added by user
+  notes          String?   
+
+  appliedAt      DateTime?
+  lastUpdated    DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+
+  statusHistory  StatusHistory[]
+  emails         EmailSource[]
+
+  @@index([userId])
+  @@index([userId, company, jobTitle])
+  @@map("applications")
+}
+
+// Immutable log of every status change
+model StatusHistory {
+  id             String      @id @default(cuid())
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  status         String
+  emailId        String?     // Gmail message ID that triggered this change
+  emailSubject   String?
+  emailDate      DateTime?
+  confidence     Float?
+
+  createdAt      DateTime    @default(now())
+
+  @@index([applicationId])
+  @@map("status_history")
+}
+
+// Raw email metadata linked to an application
+model EmailSource {
+  id              String      @id @default(cuid())
+  applicationId   String
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  gmailMessageId  String      @unique  // Prevents duplicate email imports
+  subject         String?
+  fromAddress     String?
+  receivedAt      DateTime?
+  snippet         String?
+
+  createdAt       DateTime    @default(now())
+
+  @@index([applicationId])
+  @@index([gmailMessageId])
+  @@map("email_sources")
+}
