@@ -1,5 +1,5 @@
 const { fetchJobEmails } = require('./gmail');
-const { analyzeEmail } = require('./claude');
+const { analyzeEmail } = require('./openAi');
 const { upsertApplication } = require('./deduplication');
 const prisma = require('../lib/prisma');
 
