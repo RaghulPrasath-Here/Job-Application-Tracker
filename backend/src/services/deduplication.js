@@ -11,6 +11,10 @@ const STATUS_RANK = {
   Withdrawn: 4,
 };
 
+function buildGmailLink(messageId) {
+  return `https://mail.google.com/mail/u/0/#inbox/${messageId}`;
+}
+
 // Normalize strings for fuzzy comparison
 function normalize(str) {
   return (str || '')
@@ -113,6 +117,7 @@ async function upsertApplication(userId, analysisResult, emailData) {
               fromAddress: emailData.from,
               receivedAt: emailData.date,
               snippet: emailData.snippet,
+              gmailLink: buildGmailLink(emailData.id),
             },
           },
         },
@@ -129,6 +134,7 @@ async function upsertApplication(userId, analysisResult, emailData) {
               fromAddress: emailData.from,
               receivedAt: emailData.date,
               snippet: emailData.snippet,
+              gmailLink: buildGmailLink(emailData.id),
             },
           },
         },
@@ -166,6 +172,7 @@ async function upsertApplication(userId, analysisResult, emailData) {
             fromAddress: emailData.from,
             receivedAt: emailData.date,
             snippet: emailData.snippet,
+            gmailLink: buildGmailLink(emailData.id),
           },
         },
       },
